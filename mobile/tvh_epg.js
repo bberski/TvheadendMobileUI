@@ -25,8 +25,6 @@ var loadedPosters = new Array();
 var loadedBackdrops = new Array();
 var posterWidth = 92;
 var backdropWidth = 780;
-//var tmdbImgUrl = 'http://d3gtl9l2a4fn1j.cloudfront.net/t/p/w';
-//var tmdbImgUrl = 'https://image.tmdb.org/t/p/original';
 var tmdbImgUrl = 'https://image.tmdb.org/t/p/w';
 
 function loadEpg() {
@@ -113,7 +111,6 @@ function show(id) {
 			}
 			else {
 				var http = new XMLHttpRequest();
-//				http.open("GET", 'http://api.themoviedb.org/3/search/movie?api_key='+tmdbApiKey+'&query='+encodeURI(title)+'&language='+navigator.language.substring(0,2));
 				http.open("GET", 'http://api.themoviedb.org/3/search/movie?api_key='+tmdbApiKey+'&query='+encodeURI(title)+'&language='+'sv');
 				http.send(null);
 				http.title = title;
@@ -164,7 +161,6 @@ function timestampToX(timestamp) {
 
 function readEpg(response) {
 	if (response.entries.length > 0) {
-//		configSelect = configSelect.reverse();
 		var html = '';
 		var last = lastEpgX == undefined ? 0 : lastEpgX;
 		for (var i in response.entries) {
@@ -190,13 +186,11 @@ function readEpg(response) {
 			e.genre -= e.genre % 16;
 			html += '<div id="e_'+e.eventId+'" class="box '+e.dvrState+' ct_'+e.genre+open+'" style="top:'+y+'px;left:'+x+'px;width:'+w+'px;height:'+lh+'px;">';
 			html += '<div class="bgimage"><div class="gradient"><div class="head" onclick="show('+e.eventId+');"><h1>'+e.title+'</h1>';
-//			html += '<div class="bgimage"><div class="head" onclick="show('+e.eventId+');">'+e.title+'';
 			var sub = '';
 			if (e.subtitle != undefined && e.subtitle != e.title)
 				sub += e.subtitle;
 			if (e.episodeOnscreen != undefined)
 				sub += (sub.length > 0 ? ' &mdash; ' : '') + e.episodeOnscreen;
-//			html += '<h2>'+sub+'</h2></div>';
 			html += '<small>'+sub+'</small></div>';
 			html += '<div class="add">'+(e.genre==0||e.genre==16?'<div class="poster"></div>':'')+'<h3 onclick="show('+e.id+');">'+nvl(contentGroups[e.genre])+'</h3><p class="desc" onclick="show('+e.eventId+');">'+nvl(e.description)+'</p>';
 			html += '<p class="time">' + getDateTimeFromTimestamp(e.start, true) + '&ndash;' + getTimeFromTimestamp(e.stop) + ' (' + getDuration(e.stop-e.start) + l('hour.short') + ')</p>';
@@ -243,7 +237,6 @@ function readConfigs(response) {
 	window.configSelect = '<select name="config">';
 	for (i in response.entries) {
 		var e = response.entries[i];
-//		var selected = (e.key == '') ? ' selected="selected"' : '';
 		var selected = (e.val == '(Default profile)') ? ' selected="selected"' : '';
 		window.configSelect += '<option value="'+e.key+'"'+selected+'>'+e.val+'</option>';
 	}
@@ -363,7 +356,6 @@ function readContentGroups(response) {
 		window.contentGroups[e.key] = e.val;
 	}
 	doPost("api/idnode/load", readConfigs, "enum=1&class=dvrconfig");
-//	readConfigs = readConfigs.reverse(); 
 }
 
 function init() {

@@ -11,15 +11,14 @@ var endTimes = new Array();
 var channelNames = new Array();
 var channelTagsLoaded = false;
 var channelsLoaded = false;
-// antal kommande/inspelade inspelning
+// show nr upcoming recording
 var s_start = 50;
-// antal på search
+// show nr search
 var start_limit = 100;
 // antal automatic recorder
 var limit_automatic = 200;
 var start_limit_search = 150;
 var Default_Config = 'bb3cad97b91fb112b8f01ada3f16c169';
-//var readInputs = null;
 
 
 //Tips
@@ -27,7 +26,6 @@ var Default_Config = 'bb3cad97b91fb112b8f01ada3f16c169';
 
 function layoutFormat(e, type) {
 	var ret = layout[type];
-//	alert(JSON.stringify(e)); //Print response
 	if (e.title == e.subtitle)
 		e.subtitle = undefined;
 	ret = ret.replace(/%ti/g, nvl(e.disp_title ? e.disp_title : e.title));
@@ -97,7 +95,6 @@ function getAutomaticRecorderForm(e) {
 	divs += '<fieldset>';
 	divs += '<div class="row"><label>'+l('channel')+'</label><input type="text" code="' + nvl(e.channel) + '" readonly="readonly" name="channel" value="' + nvl(channelNames[e.channel]) + '" onclick="showSelector(\'channel\', this);" /></div>';
 	divs += '<div class="row"><label>'+l('tag')+'</label><input type="text" code="' + nvl(e.tag) + '" readonly="readonly" name="tag" value="' + nvl(window.channelTags[e.tag]) + '" onclick="showSelector(\'tag\',this);" /></div>';
-//	divs += '<div class="row"><label>'+l('genre')+'</label><input type="text" code="'+nvl(e.content_type)+'" readonly="readonly" name="contenttype" value="' + nvl(contentGroups[e.content_type]) + '" onclick="showSelector(\'genre\',this);" /></div>';
 	divs += '<div class="row"><label>'+l('genre')+'</label><input type="text" code="'+nvl(e.genre)+'" readonly="readonly" name="contenttype" value="' + nvl(contentGroups[e.genre]) + '" onclick="showSelector(\'genre\',this);" /></div>';
 	divs += '<div class="row"><label>'+l('config')+'</label><input type="text" code="' + nvl(e.config_name) + '" readonly="readonly" name="config_name" value="' + nvl(configNames[e.config_name]) + '" onclick="showSelector(\'config\',this);" /></div>';
 	divs += '</fieldset>';
@@ -265,39 +262,19 @@ function readSubscriptions(response) {
 	document.getElementById('subscriptions').innerHTML = html;
 	append(app);
 }
-/*
-function readAdapters(response) {
-	var html = '';
-	var app = '';
-	for (var i in response.entries) {	
-		var e = response.entries[i];
-		html += '<li><a href="#adapter_'+e.identifier+'">'+e.name+'<div class="small">'+e.path+' &mdash; '+e.services+' '+l('services')+' &mdash; '+e.muxes+' ' + l('muxes')+'</div>';
-		if (e.signal != undefined)
-			html += getProgressBar(200, e.signal) + e.signal + '%'; 
-		html += '</a></li>';
-		app += getAdapterForm(e);
-	}
-	document.getElementById('adapters').innerHTML = html;
-	append(app);
-}
-*/
 
 function readAdapters(response) {
 	var html = '';
 	var app = '';
 //	alert(JSON.stringify(response[0].params[0].value)); //Print response
-//	for (var i in response) {	
 	for (var i=0; i<response.length; i++) {
 		var e = response[i];
-//		alert(JSON.stringify(e)); //Print response
 		html += '<li><a href="#adapter_'+e.uuid+'">'+e.text+'<div class="small">'+e.class+'</div>';
 		loadInputs();
-//		alert(JSON.stringify(x_response)); //Print response
 		if (f.signal != undefined)
 			html += getProgressBar(200, f.signal) + f.signal + '%'; 
 		html += '</a></li>';
 		app += getAdapterForm(e);
-//		alert(JSON.stringify(e)); //Print response
 	}
 	document.getElementById('adapters').innerHTML = html;
 	append(app);
@@ -307,19 +284,11 @@ function loadSubscriptions() {
 	doGet('api/status/subscriptions', readSubscriptions);
 }
 function readInputs(x_response) {
-//	var app = '';
-//	var dvd = response
-//	alert(JSON.stringify(x_response)); //Print response
-//	append(x_response);
-//	append(app);
 }
 function loadInputs() {
 	doGet('/api/status/inputs', readInputs);
-//	alert(JSON.stringify(readInputs(response))); //Print response
-//	return readInputs;
 }
 function loadAdapters() {
-//vohrmann.homelinux.com:9981/api/hardware/tree?uuid=root
 	doPost('api/hardware/tree', readAdapters, "uuid=root");
 }
 
@@ -369,7 +338,6 @@ function getRecordingForm(e, type) {
 	else {
 		divs += textField('duplicate', 'No');
 	}
-//	divs += textField('duplicate', e.duplicate, true);
 	var status = l('status.'+e.status)!='status.'+e.status ? l('status.'+e.status) : e.status;
 	divs += textField('status', status, true);
 	divs += textField('errors', e.errors+'/'+e.errorcode+'/'+e.data_errors, true);
@@ -377,7 +345,6 @@ function getRecordingForm(e, type) {
 	divs += textField('uiid', e.uuid, true);
 	divs += '</fieldset>';
 //	alert(JSON.stringify(e)); //Print response
-// fixa apostrofen till mellanslag
 	disptitle = e.disp_title.replace("'", '');
 	divs += '<a class="whiteButton" href="http://www.themoviedb.org/search?language=sv&query='+e.disp_title+'" target="_blank">'+l('tmdbSearch')+'</a>';
 	divs += '<a class="whiteButton" href="http://www.imdb.org/find?q='+e.disp_title+'" target="_blank">'+l('imdbSearch')+'</a>';
@@ -423,10 +390,6 @@ function getAdapterForm(e) {
 	divs += textField('path', e.params[0].value, true);
 	divs += textField('class', e.class, true);
 	divs += textField('event', e.event, true);
-
-//	divs += textField('services', e.services, true);
-//	divs += textField('muxes', e.muxes, true);
-//	divs += textField('signal', e.signal, true);
 	divs += '</fieldset>';
 	if (document.getElementById('adapter_'+e.uuid) != null) {
 		document.getElementById('adapter_'+e.uuid).innerHTML = divs;
@@ -465,16 +428,7 @@ function getEpgForm(e) {
 	divs += textField('start', getDateTimeFromTimestamp(e.start, true), true);
 	divs += textField('end', getDateTimeFromTimestamp(e.stop, true), true);
 	divs += textField('duration', getDuration(e.stop-e.start)+l('hour.short'), true);
-//	divs += textField('genre', contentGroups[e.content_type], true);
 	divs += textField('genre', contentGroups[e.genre], true);
-/*
-	if (e.duplicate > 0 ) {
-		divs += textField('duplicate', 'Will be skipped, recorded =  ' +getDateTimeFromTimestamp(e.duplicate, true), true);
-	}
-	else {
-		divs += textField('duplicate', 'No');
-	}
-*/
 	if (e.dvrState != "") {
 		divs += textField('status', e.dvrState, true);
 	}
@@ -487,11 +441,8 @@ function getEpgForm(e) {
 		divs += '<a class="redButton" href="javascript:cancelEpg('+e.start+',\''+e.dvrUuid+'\',\''+e.channelUuid+'\');">'+l('cancel')+'</a>';
 	}
 	else {
-// knappen record
+// button record
 		divs += '<a class="whiteButton" href="javascript:recordEpg('+e.eventId+',\''+e.channelUuid+'\');">'+l('record')+'</a>';
-//		divs += '<a class="whiteButton" href="javascript:getAutomaticRecorderForm(newAutomaticRecorder());">'+l('automaticRecorder')+'</a>';
-//		divs += '<a class="whiteButton" href="javascript:getAutomaticRecorderForm();">'+l('automaticRecorder')+'</a>';
-//		html += '<p class="channel">' + e.channelName + ' &mdash; <a href="http://www.imdb.org/find?q='+e.title+'" target="_blank">'+l('imdbSearch')+'</a> &mdash; <a href="http://www.themoviedb.org/search?language=sv&query='+e.title+'" target="_blank">'+l('tmdbSearch')+'</a></p><br clear="all" />';
 		divs += '<fieldset>';
 		divs += '<div class="row"><label>'+l('config')+'</label><input type="text" readonly="readonly" code="" name="config" value="" onclick="javascript:showSelector(\'config\',this);" /></div>';
 		divs += '<div class="row"><label>'+l('directory')+'</label><input type="text" name="directory" value="' + nvl(e.directory) + '" /></div>';
@@ -576,7 +527,7 @@ function recordEpg(id, channel) {
 }
 
 
-// listan efter search 
+// list after search 
 function readRecordings(response) {
 	var which = response.param;
 	var list = document.getElementById(which);
@@ -601,7 +552,6 @@ function readRecordings(response) {
 		divs += getRecordingForm(e, which);
 	}
 //	alert(JSON.stringify(response.total)); //Print response
-//	if (response.totalCount > epgLoaded[which])
 	if (response.total > epgLoaded[which])
 		html += '<li class="noBgImage"><a class="more" href="javascript:loadRecordings(\''+which+'\', false);">'+l('getMore')+'</a></li>';
 	if (which == 'upcoming') {
@@ -715,16 +665,11 @@ function readCancelEntry(response) {
 }
 
 function readDeleteEntry(response) {
-//	if (response.success == 1) {
 		if (response.param != undefined)
 			loadRecordings(response.param, true);
 		if (epgLoaded['s'] > 0)
 			searchEpg(false,false);
 		iui.goBack();
-//	}
-//	else {
-//		alert(l('errorDeletingEntry'));
-//	}
 }
 
 function cancelEntry(entryId, type) {
@@ -870,7 +815,6 @@ function readAutomaticRecorderList(response) {
 		info += plusMinus(e.pri);
 		info += e.channel ? (info.length > 0 ? ' ' : '') + window.channelNames[e.channel] : '';
 		info += e.tag ? (info.length > 0 ? ' &mdash; ' : '') + window.channelTags[e.tag] : '';
-//		info += e.content_type ? (info.length > 0 ? ' &mdash; ' : '') + window.contentGroups[e.content_type] : '';
 		info += e.genre ? (info.length > 0 ? ' &mdash; ' : '') + window.contentGroups[e.genre] : '';
 		info += e.config_name ? (info.length > 0 ? ' &mdash; ' : '') + configNames[e.config_name] : '';
 		info += e.start != '' && e.start != 'Any' ? (info.length > 0 ? ' &mdash; ' : '') + e.start : '';
@@ -928,7 +872,6 @@ function initialLoad() {
 	doPost("api/epg/content_type/list", readContentGroups, "full=0");
 	doPost("api/idnode/load", readConfigs, "enum=1&class=dvrconfig");
 //    alert(JSON.stringify(configs)); //Print response
-//	doGet("diskspace", readDiskspace);
 	channelTagsLoaded = false;
 	channelsLoaded = false;
 	doPost("api/channeltag/grid", readChannelTags, "sort=name&dir=ASC&all=1");
@@ -1017,8 +960,6 @@ function init() {
 	self.name = 'tvheadend';
 	document.getElementById('reloadButton').innerHTML = l('reload');
 	var ini = '';
-//	ini += '<li id="diskspaceHeader" class="group">'+l('diskspace')+'</li>';
-//	ini += '<li style="text-align:center;" class="noBgImage" id="diskspace">'+icon('../icons/drive.png','left')+'&mdash;'+'</li>';
 	ini += '<li id="epgGroup" class="group">'+l('electronicProgramGuide')+'</li>';
 	ini += '<li class="noBgImage"><form onsubmit="searchEpg(true,true);return false;"><div style="position:relative;"><input id="searchText" class="round" type="text" name="search" onfocus="showClearSearch(true);" onkeydown="showClearSearch(true);" onblur="showClearSearch(false);" /><img id="clearSearch" src="images/clearsearch.png" style="display:none;position:absolute;top:2px;right:1.2%;cursor:pointer;" onclick="document.getElementById(\'searchText\').value=\'\';document.getElementById(\'searchText\').focus();"></div>';
 	ini += '<div><input id="searchButton" type="button" value="'+l('search')+'" style="width:99%;" onclick="searchEpg(true,false);"/></div></form></li>';

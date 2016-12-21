@@ -27,7 +27,7 @@ var selectedDay = new Date(new Date().getTime()-hourOffset*60*60*1000);
 var channelNameToId = new Array();
 var lastEpgResponse = new Array();
 var mutex = new Array();
-//laggt till
+//Add
 var start = 0;
 var limit = 1000;
 
@@ -45,7 +45,6 @@ function readConfigs(response) {
 	window.configSelect = '<select name="config">';
 	for (i in response.entries) {
 		var e = response.entries[i];
-//		var selected = (e.key == '') ? ' selected="selected"' : '';
 		var selected = (e.val == '(Default profile)') ? ' selected="selected"' : '';
 		window.configSelect += '<option value="'+e.key+'"'+selected+'>'+e.val+'</option>';
 	}
@@ -142,7 +141,7 @@ function showHide(id) {
 function loadEpgByChannel(channel) {
 	if (mutex[channel] == undefined) {
 		mutex[channel] = true;
-//Andrat limit och start
+//change limit och start
 		doPostWithParam("api/epg/events/grid", readEpg, 'start='+start+'&limit='+limit+'&channel='+encodeURIComponent(channel), channel);
 	}
 }
@@ -227,11 +226,9 @@ function selectTag(tag) {
 function init() {
 	self.name = 'mag';
 	doPost("api/idnode/load", readConfigs, "enum=1&class=dvrconfig");
-	//	doPost("api/epg/content_type/list", readContentGroups, "full=0");
 	doPost("api/channeltag/grid", readChannelTags, "sort=name&dir=ASC&all=1");
 	doPost("api/channel/grid", readChannels, "start=0&limit=999999999&sort=number&dir=ASC&all=1");
 	append('<span style="float:right;"><a href="mobile.html" target="tvheadend"><img width="50px" src="images/tvheadend128.png" title="'+l('backToMobileUi')+'"></a></span><div id="tags"></div><table style="width:100%;"><tr><td style="width:95%;"><div id="date"><span class=link" onclick="cols(5);">'+icon('images/layout_add.png')+'</span><span class="link" onclick="pageDate(-1);">'+icon('images/date_previous.png')+'</span><span id="day"></span><span class="link" onclick="pageDate(1);">'+icon('images/date_next.png')+'</span><span class="link" onclick="cols(-5);">'+icon('images/layout_delete.png')+'</span></td><td style="white-space:nowrap;vertical-align:bottom;"><a class="link" onclick="cols(1);">'+icon('images/layout_add.png')+'</a><a class="link" onclick="cols(-1);">'+icon('images/layout_delete.png')+'</a></td></tr></table><table id="epg"></table>');
-//	append('<span style="float:right;"><a href="mobile.html" target="tvheadend"><img width="50px" src="images/tvheadend128.png" title="'+l('backToMobileUi')+'"></a></span><div id="tags"></div><table style="width:100%;"><tr><td style="width:95%;"><div id="date"><span class="link" onclick="pageDate(-1);">'+icon('images/date_previous.png')+'</span><span id="day"></span><span class="link" onclick="pageDate(1);">'+icon('images/date_next.png')+'</span></td><td style="white-space:nowrap;vertical-align:bottom;"><a class="link" onclick="cols(1);">'+icon('images/layout_add.png')+'</a><a class="link" onclick="cols(-1);">'+icon('images/layout_delete.png')+'</a></td></tr></table><table id="epg"></table>');
 	initTable();
 	initEpg();
 	setInterval(function() { showCurrent(); }, 10*1000);
