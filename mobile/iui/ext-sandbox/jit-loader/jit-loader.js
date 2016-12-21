@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2007-10, iUI Project Members
+   Copyright (c) 2007-12, iUI Project Members
    See LICENSE.txt for licensing terms
  */
 
@@ -31,8 +31,8 @@ var loadedScripts = {};
 
 addEventListener("load", function(event)
 {
-	document.body.addEventListener('beforeinsert', beforeInsert, false);
-	document.body.addEventListener('afterinsertend', afterInsertEnd, false);
+	document.body.addEventListener('iui.beforeinsert', beforeInsert, false);
+	document.body.addEventListener('iui.afterinsertend', afterInsertEnd, false);
 }, false);
 
 var loading = false;

@@ -9,6 +9,7 @@ var tmdbApiKey = '';
  * %ds		dash
  * %ep		episode
  * %ds_ep	dash with episode
+ * %bu_ep	bull with episode
  * %st		start time
  * %sdt		start date and time
  * %et		end time
@@ -18,23 +19,28 @@ var tmdbApiKey = '';
  * %ch		channel
  * %pr		priority
  * %br		break/newline
+ * %dir		directory
+ * %ic		channel icon
+ * %dvric	channel icon dvr
  */
 var layouts =
 {'polini':
 	{
 	'current': '%st%pb%et%br<b>%ti</b>%ds_ep%br%su',
-	'epg': '<span class="small">%st</span> %ti<div class="small">%su</div>',
-	'search': '%ti%ds_ep<div class="small">%st%ds%ch%ds_su</div>',
-	'dvr': '%ti%ds_ep<div class="small">%st (%du)%ds_su%ds%pr%ch</div>',
+	'epg': '<span class="small">%st%ds%et</span> %ti<div class="small">%su</div>',
+	'search': '%ti%ds_ep<div class="small">%sdt%ds%et%ds%ch%ds_su</div>',
+	'dvr': '%ti%ds_ep<div class="small">%st (%du)%ds_su%ds%pr%ch%dir</div>',
 	},
 'gborri':
 {
 	'current': '%st%pb%et%br<b>%ti</b>%ds_su%br%ep',
-	'epg': '%ti%ds_su<div class="small">%st%ds_ep</div>',
-	'search': '%ti%ds_su<div class="small">%st%ds%ch%ds_ep</div>',
-	'dvr': '%ti%ds_su<div class="small">%st (%du)%ds_ep%ds%pr%ch</div>',
+	'epg': '%ic%ti%ds_su<div class="small">%st%ds%et%ds_ep</div>',
+	'search': '%ic%ti%ds_su%bu_ep<div class="small">%sdt%ds%et</div>',
+	'dvr': '%dvric%ti%bu_ep<div class="small">%st%ds%et%dir</div>',
 	}
 };
+
+//	'search': '%ch•%ti%bu_ep<div class="small">%sdt%ds%et%ds%ds_ep</div>',
 
 var layout = layouts['gborri']; 
 
@@ -49,12 +55,16 @@ function doPostWithParam(path, callback, params, ownParam) {
 	http.setRequestHeader("Content-length", params.length);
 	http.setRequestHeader("Connection", "close");
 	http.ownParam = ownParam;
-
 	http.onreadystatechange = function() {
 		if(http.readyState == 4 && http.status == 200) {
 			var response = eval("[" + http.responseText + "]");
 			response[0].param = http.ownParam;
+			if(params == "enum=1&class=dvrconfig") {
+//			alert(JSON.stringify(response)); //Print response
+//    			alert(JSON.stringify(response[0])); //Print response
+			}
 			callback(response[0]);
+
 		}
 	};
 

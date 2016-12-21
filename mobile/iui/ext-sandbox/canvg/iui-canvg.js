@@ -1,5 +1,5 @@
 /*
-   Copyright (c) 2010, iUI Project Members
+   Copyright (c) 2010-13, iUI Project Members
    See LICENSE.txt for licensing terms
  */
 
@@ -21,26 +21,8 @@
 //
 addEventListener("DOMContentLoaded", function(event)
 {
-	document.body.addEventListener('afterinsert', afterInsert, false);
-// This will register event handlers on all initial nodes
-// We'll also need to register handlers on inserted (via ajax) nodes
-// To do that we'll need to use the beforeInsert event
-	var nodes = iui.getAllViews();
-	for (var i = 0; i  < nodes.length  ; i++)
-	{
-		registerAllEvents(nodes[i]);
-	}	
+	document.body.addEventListener('iui.load', onLoad, false);
 }, false);
-
-function registerAllEvents(node)
-{
-	node.addEventListener('load', onLoad, false);
-}
-
-function afterInsert(e)
-{
-	registerAllEvents(e.insertedNode);	// Set event handlers on newly added node
-}
 
 function onLoad(e)
 {
@@ -59,6 +41,5 @@ function onLoad(e)
 		}
 	}
 }
-
 
 })();

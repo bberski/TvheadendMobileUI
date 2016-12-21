@@ -11,17 +11,33 @@ var endTimes = new Array();
 var channelNames = new Array();
 var channelTagsLoaded = false;
 var channelsLoaded = false;
+// antal kommande/inspelade inspelning
+var s_start = 50;
+// antal på search
+var start_limit = 100;
+// antal automatic recorder
+var limit_automatic = 200;
+var start_limit_search = 150;
+var Default_Config = 'bb3cad97b91fb112b8f01ada3f16c169';
+//var readInputs = null;
+
+
+//Tips
+//    alert(JSON.stringify(response)); //Print response
 
 function layoutFormat(e, type) {
 	var ret = layout[type];
+//	alert(JSON.stringify(e)); //Print response
 	if (e.title == e.subtitle)
 		e.subtitle = undefined;
 	ret = ret.replace(/%ti/g, nvl(e.disp_title ? e.disp_title : e.title));
 	ret = ret.replace(/%ds_su/g, nvl(e.subtitle) != '' ? ' &mdash; '+e.subtitle : '');
 	ret = ret.replace(/%su/g, nvl(e.subtitle));
 	ret = ret.replace(/%ch/g, nvl(e.channelname ? e.channelname : e.channelName));
-	ret = ret.replace(/%ds_ep/g, nvl(e.episode) != '' ? ' &mdash; '+e.episode : '');
-	ret = ret.replace(/%ep/g, nvl(e.episode));
+	ret = ret.replace(/%ds_ep/g, nvl(e.episodeOnscreen) != '' ? ' &mdash; '+e.episodeOnscreen : '');
+	ret = ret.replace(/%bu_ep/g, nvl(e.episodeOnscreen) != '' ? ' &bull; '+e.episodeOnscreen : '');
+	ret = ret.replace(/%ep/g, nvl(e.episodeOnscreen));
+	ret = ret.replace(/%dir/g, nvl(e.directory) != '' ? ' &mdash; '+e.directory : '');
 	var percent = 0;
 	if (e.stop > 0 && e.stop > e.start)
 		percent = Math.round((((new Date()).getTime()/1000)-e.start)/(e.stop-e.start)*100);
@@ -34,6 +50,8 @@ function layoutFormat(e, type) {
 	ret = ret.replace(/%pr/g, plusMinus(e.pri));
 	ret = ret.replace(/%ds/g, ' &mdash; ');
 	ret = ret.replace(/%br/g, '<br />');
+	ret = ret.replace(/%ic/g, '<img src="../../'+e.channelIcon+'"'+' height="40px" >');
+	ret = ret.replace(/%dvric/g, '<img src="../../'+e.channel_icon+'"'+' height="40px" >');
 	return ret;
 }
 
@@ -79,7 +97,8 @@ function getAutomaticRecorderForm(e) {
 	divs += '<fieldset>';
 	divs += '<div class="row"><label>'+l('channel')+'</label><input type="text" code="' + nvl(e.channel) + '" readonly="readonly" name="channel" value="' + nvl(channelNames[e.channel]) + '" onclick="showSelector(\'channel\', this);" /></div>';
 	divs += '<div class="row"><label>'+l('tag')+'</label><input type="text" code="' + nvl(e.tag) + '" readonly="readonly" name="tag" value="' + nvl(window.channelTags[e.tag]) + '" onclick="showSelector(\'tag\',this);" /></div>';
-	divs += '<div class="row"><label>'+l('genre')+'</label><input type="text" code="'+nvl(e.content_type)+'" readonly="readonly" name="contenttype" value="' + nvl(contentGroups[e.content_type]) + '" onclick="showSelector(\'genre\',this);" /></div>';
+//	divs += '<div class="row"><label>'+l('genre')+'</label><input type="text" code="'+nvl(e.content_type)+'" readonly="readonly" name="contenttype" value="' + nvl(contentGroups[e.content_type]) + '" onclick="showSelector(\'genre\',this);" /></div>';
+	divs += '<div class="row"><label>'+l('genre')+'</label><input type="text" code="'+nvl(e.genre)+'" readonly="readonly" name="contenttype" value="' + nvl(contentGroups[e.genre]) + '" onclick="showSelector(\'genre\',this);" /></div>';
 	divs += '<div class="row"><label>'+l('config')+'</label><input type="text" code="' + nvl(e.config_name) + '" readonly="readonly" name="config_name" value="' + nvl(configNames[e.config_name]) + '" onclick="showSelector(\'config\',this);" /></div>';
 	divs += '</fieldset>';
 	divs += '<fieldset>';
@@ -96,6 +115,7 @@ function getAutomaticRecorderForm(e) {
 	divs += '<fieldset>';
 	divs += '<div class="row"><label>'+l('createdBy')+'</label><input type="text" name="creator" value="' + nvl(e.creator) + '" /></div>';
 	divs += '<div class="row"><label>'+l('comment')+'</label><input type="text" name="comment" value="' + nvl(e.comment) + '" /></div>';
+	divs += '<div class="row"><label>'+l('directory')+'</label><input type="text" name="directory" value="' + nvl(e.directory) + '" /></div>';
 	divs += '</fieldset>';
 	divs += '<a class="whiteButton" href="javascript:saveAutomaticRecorder(\''+e.uuid+'\');">'+l('save')+'</a>';
 	if (e.id != 'new') {
@@ -185,7 +205,9 @@ function saveAutomaticRecorder(id) {
 	entries[0].pri = form.priority.getAttribute('code');
 	entries[0].creator = form.creator.value;
 	entries[0].comment = form.comment.value;
+	entries[0].directory = form.directory.value;
 	var params = (id=="new"?"conf="+JSON.stringify(entries[0]):"node="+JSON.stringify(entries));
+//	alert(JSON.stringify(params)); //Print 
 	doPost((id=="new"?"api/dvr/autorec/create":"api/idnode/save"), readSaveAutomaticRecorder, params);
 }
 
@@ -237,13 +259,13 @@ function readSubscriptions(response) {
 	var app = '';
 	for (var i in response.entries) {	
 		var e = response.entries[i];
-		html += '<li><a href="#sub_'+e.id+'">'+e.channel+'<div class="small">'+e.hostname+' &mdash; '+e.title+'<br>'+e.service+'</div></a></li>';
+		html += '<li><a href="#sub_'+e.id+'">'+e.channel+'<div class="small">'+e.title+'<br>'+e.service+'</div></a></li>';
 		app += getSubscriptionForm(e);
 	}
 	document.getElementById('subscriptions').innerHTML = html;
 	append(app);
 }
-
+/*
 function readAdapters(response) {
 	var html = '';
 	var app = '';
@@ -258,12 +280,46 @@ function readAdapters(response) {
 	document.getElementById('adapters').innerHTML = html;
 	append(app);
 }
+*/
+
+function readAdapters(response) {
+	var html = '';
+	var app = '';
+//	alert(JSON.stringify(response[0].params[0].value)); //Print response
+//	for (var i in response) {	
+	for (var i=0; i<response.length; i++) {
+		var e = response[i];
+//		alert(JSON.stringify(e)); //Print response
+		html += '<li><a href="#adapter_'+e.uuid+'">'+e.text+'<div class="small">'+e.class+'</div>';
+		loadInputs();
+//		alert(JSON.stringify(x_response)); //Print response
+		if (f.signal != undefined)
+			html += getProgressBar(200, f.signal) + f.signal + '%'; 
+		html += '</a></li>';
+		app += getAdapterForm(e);
+//		alert(JSON.stringify(e)); //Print response
+	}
+	document.getElementById('adapters').innerHTML = html;
+	append(app);
+}
 
 function loadSubscriptions() {
 	doGet('api/status/subscriptions', readSubscriptions);
 }
-
+function readInputs(x_response) {
+//	var app = '';
+//	var dvd = response
+//	alert(JSON.stringify(x_response)); //Print response
+//	append(x_response);
+//	append(app);
+}
+function loadInputs() {
+	doGet('/api/status/inputs', readInputs);
+//	alert(JSON.stringify(readInputs(response))); //Print response
+//	return readInputs;
+}
 function loadAdapters() {
+//vohrmann.homelinux.com:9981/api/hardware/tree?uuid=root
 	doPost('api/hardware/tree', readAdapters, "uuid=root");
 }
 
@@ -294,21 +350,42 @@ function readChannelTags(response) {
 	window.channelTagsLoaded = true;
 }
 
+// Inspelade och kommande inspelningar
 function getRecordingForm(e, type) {
 	var divs = getIntro(e);
 	divs += '<fieldset>';
-	divs += textField('episode', e.episodeOnscreen, true);
+	divs += textField('episode', e.episode, true);
 	divs += textField('channel', e.channelname, true);
 	divs += textField('priority', (e.pri != undefined ? l('prio.'+priorities[e.pri]) : ''), true);
 	divs += textField('start', getDateTimeFromTimestamp(e.start, true), true);
 	divs += textField('end', getDateTimeFromTimestamp(e.stop, true), true);
 	divs += textField('duration', getDuration(e.duration)+l('hour.short'), true);
 	divs += textField('config', configNames[e.config_name], true);
+	divs += textField('directory', e.directory, true);
+	divs += textField('filesize', parseInt(e.filesize / 1000000)+' MB' , true);
+	if (e.duplicate > 0 ) {
+		divs += textField('duplicate', 'Will be skipped, recorded =  ' +getDateTimeFromTimestamp(e.duplicate, true), true);
+	}
+	else {
+		divs += textField('duplicate', 'No');
+	}
+//	divs += textField('duplicate', e.duplicate, true);
 	var status = l('status.'+e.status)!='status.'+e.status ? l('status.'+e.status) : e.status;
 	divs += textField('status', status, true);
+	divs += textField('errors', e.errors+'/'+e.errorcode+'/'+e.data_errors, true);
+	divs += textField('comment', e.comment, true);
+	divs += textField('uiid', e.uuid, true);
 	divs += '</fieldset>';
+//	alert(JSON.stringify(e)); //Print response
+// fixa apostrofen till mellanslag
+	disptitle = e.disp_title.replace("'", '');
+	divs += '<a class="whiteButton" href="http://www.themoviedb.org/search?language=sv&query='+e.disp_title+'" target="_blank">'+l('tmdbSearch')+'</a>';
+	divs += '<a class="whiteButton" href="http://www.imdb.org/find?q='+e.disp_title+'" target="_blank">'+l('imdbSearch')+'</a>';
+	divs += '<a class="whiteButton" href="http://m.imdb.com/find?q='+e.disp_title+'" target="_blank">'+l('imdbSearchMobile')+'</a>';
+	if (e.status == 'Completed OK' )
+		divs += '<a class="redButton" href="javascript:deleteEntry(\''+e.uuid+'\', \''+type+'\', \''+disptitle+'\');">'+l('delete')+'</a>';
 	if (e.sched_status == 'scheduled' || e.sched_status == 'recording' || type == 'failed')
-		divs += '<a class="redButton" href="javascript:deleteEntry(\''+e.uuid+'\', \''+type+'\');">'+l('delete')+'</a>';
+		divs += '<a class="redButton" href="javascript:deleteEntry(\''+e.uuid+'\', \''+type+'\', \''+disptitle+'\');">'+l('delete')+'</a>';
 	if (document.getElementById('rec_'+e.uuid) != null) {
 		document.getElementById('rec_'+e.uuid).innerHTML = divs;
 		return '';
@@ -323,9 +400,10 @@ function getSubscriptionForm(e) {
 	divs += '<fieldset>';
 	divs += textField('title', e.title, true);
 	divs += textField('channel', e.channel, true);
-	divs += textField('hostname', e.hostname, true);
+	divs += textField('Service', e.service, true);
 	divs += textField('status', e.state, true);
 	divs += textField('start', getDateTimeFromTimestamp(e.start, true), true);
+	divs += textField('Errors', e.errors, true);
 	divs += '</fieldset>';
 	if (document.getElementById('sub_'+e.id) != null) {
 		document.getElementById('sub_'+e.id).innerHTML = divs;
@@ -339,20 +417,23 @@ function getSubscriptionForm(e) {
 function getAdapterForm(e) {
 	divs = '';
 	divs += '<fieldset>';
-	divs += textField('name', e.name, true);
-	divs += textField('path', e.path, true);
-	divs += textField('devicename', e.devicename, true);
-	divs += textField('deliverysystem', e.deliverySystem, true);
-	divs += textField('services', e.services, true);
-	divs += textField('muxes', e.muxes, true);
-	divs += textField('signal', e.signal, true);
+	divs += textField('uuid', e.uuid, true);
+	divs += textField('name', e.text, true);
+	divs += textField('caption', e.caption, true);
+	divs += textField('path', e.params[0].value, true);
+	divs += textField('class', e.class, true);
+	divs += textField('event', e.event, true);
+
+//	divs += textField('services', e.services, true);
+//	divs += textField('muxes', e.muxes, true);
+//	divs += textField('signal', e.signal, true);
 	divs += '</fieldset>';
-	if (document.getElementById('adapter_'+e.id) != null) {
-		document.getElementById('adapter_'+e.id).innerHTML = divs;
+	if (document.getElementById('adapter_'+e.uuid) != null) {
+		document.getElementById('adapter_'+e.uuid).innerHTML = divs;
 		return '';
 	}
 	else {
-		return '<form id="adapter_' + e.identifier + '" title="' + e.name + '" class="panel">' + divs + '</form>';
+		return '<form id="adapter_' + e.uuid + '" title="' + e.text + '" class="panel">' + divs + '</form>';
 	}
 }
 
@@ -375,6 +456,8 @@ function getIntro(e) {
 }
 
 function getEpgForm(e) {
+//	alert(JSON.stringify(e.genre)); //Print response
+
 	var divs = getIntro(e);
 	divs += '<fieldset>';
 	divs += textField('episode', e.episodeOnscreen, true);
@@ -382,17 +465,36 @@ function getEpgForm(e) {
 	divs += textField('start', getDateTimeFromTimestamp(e.start, true), true);
 	divs += textField('end', getDateTimeFromTimestamp(e.stop, true), true);
 	divs += textField('duration', getDuration(e.stop-e.start)+l('hour.short'), true);
-	divs += textField('genre', contentGroups[e.contenttype], true);
+//	divs += textField('genre', contentGroups[e.content_type], true);
+	divs += textField('genre', contentGroups[e.genre], true);
+/*
+	if (e.duplicate > 0 ) {
+		divs += textField('duplicate', 'Will be skipped, recorded =  ' +getDateTimeFromTimestamp(e.duplicate, true), true);
+	}
+	else {
+		divs += textField('duplicate', 'No');
+	}
+*/
 	if (e.dvrState != "") {
-		divs += textField('status', l('status.'+e.dvrState), true);
+		divs += textField('status', e.dvrState, true);
 	}
 	divs += '</fieldset>';
-	if (e.dvrState == 'scheduled' || e.dvrState == 'running')
+	divs += '<a class="whiteButton" href="http://www.themoviedb.org/search?language=sv&query='+e.title+'" target="_blank">'+l('tmdbSearch')+'</a>';
+	divs += '<a class="whiteButton" href="http://www.imdb.org/find?q='+e.title+'" target="_blank">'+l('imdbSearch')+'</a>';
+	divs += '<a class="whiteButton" href="http://m.imdb.com/find?q='+e.title+'" target="_blank">'+l('imdbSearchMobile')+'</a>';
+
+	if (e.dvrState == 'scheduled' || e.dvrState == 'running' || e.dvrState == 'recording'){
 		divs += '<a class="redButton" href="javascript:cancelEpg('+e.start+',\''+e.dvrUuid+'\',\''+e.channelUuid+'\');">'+l('cancel')+'</a>';
+	}
 	else {
+// knappen record
 		divs += '<a class="whiteButton" href="javascript:recordEpg('+e.eventId+',\''+e.channelUuid+'\');">'+l('record')+'</a>';
+//		divs += '<a class="whiteButton" href="javascript:getAutomaticRecorderForm(newAutomaticRecorder());">'+l('automaticRecorder')+'</a>';
+//		divs += '<a class="whiteButton" href="javascript:getAutomaticRecorderForm();">'+l('automaticRecorder')+'</a>';
+//		html += '<p class="channel">' + e.channelName + ' &mdash; <a href="http://www.imdb.org/find?q='+e.title+'" target="_blank">'+l('imdbSearch')+'</a> &mdash; <a href="http://www.themoviedb.org/search?language=sv&query='+e.title+'" target="_blank">'+l('tmdbSearch')+'</a></p><br clear="all" />';
 		divs += '<fieldset>';
 		divs += '<div class="row"><label>'+l('config')+'</label><input type="text" readonly="readonly" code="" name="config" value="" onclick="javascript:showSelector(\'config\',this);" /></div>';
+		divs += '<div class="row"><label>'+l('directory')+'</label><input type="text" name="directory" value="' + nvl(e.directory) + '" /></div>';
 		divs += '</fieldset>';
 	}
 	if (document.getElementById('epg_'+e.eventId) != null) {
@@ -467,10 +569,14 @@ function cancelEpg(start, dvrUuid, channel) {
 
 function recordEpg(id, channel) {
 	var form = document.getElementById('epg_'+id);
-	var params = 'event_id='+id+'&config_uuid='+form.config.getAttribute('code');
+	var params = 'event_id='+id+'&config_uuid='+form.config.getAttribute('code')+'&directory='+form.directory.value;
+//	alert(JSON.stringify(params)); //Print response
+
 	doPostWithParam("api/dvr/entry/create_by_event", readRecordEpg, params, channel);
 }
 
+
+// listan efter search 
 function readRecordings(response) {
 	var which = response.param;
 	var list = document.getElementById(which);
@@ -484,15 +590,19 @@ function readRecordings(response) {
 			lastEpgDay[which] = day;
 		}
 		html += '<li><a href="#rec_' + e.uuid + '">';
-		if (e.dvrState == 'recording')
+		if (e.duplicate > 0)
+			html += icon('../icons/exclamation.png', '(duplicate)');
+		if (e.sched_status == 'recording')
 			html += icon('../icons/rec.png', '(recording)');
-		if (e.dvrState == 'scheduled')
+		if (e.sched_status == 'scheduled')
 			html += icon('../icons/clock.png', '(scheduled)');
 		html += layoutFormat(e, 'dvr');
 		html += '</a></li>';
 		divs += getRecordingForm(e, which);
 	}
-	if (response.totalCount > epgLoaded[which])
+//	alert(JSON.stringify(response.total)); //Print response
+//	if (response.totalCount > epgLoaded[which])
+	if (response.total > epgLoaded[which])
 		html += '<li class="noBgImage"><a class="more" href="javascript:loadRecordings(\''+which+'\', false);">'+l('getMore')+'</a></li>';
 	if (which == 'upcoming') {
 		if (window.upcoming == undefined)
@@ -512,11 +622,11 @@ var lastRecordingType = undefined;
 function loadRecordings(which, reload) {
 	lastRecordingType = which;
 	var start = epgLoaded[which] != undefined ? epgLoaded[which] : 0;
-	var limit = 20;
+	var limit = start_limit;
 	if (reload) {
 		limit = start;
 		start=0;
-		if (limit == 0) limit = 20;
+		if (limit == 0) limit = s_start;
 		if (start == 0)
 			lastEpgDay[which] = undefined;
 		var ch = document.getElementById(which);
@@ -524,7 +634,12 @@ function loadRecordings(which, reload) {
 		if (which == 'upcoming')
 			upcoming = undefined;
 	}
-	var params = 'start='+start+'&limit='+limit;
+	if (which == 'upcoming') {
+		var params = 'start='+start+'&limit='+limit+'&dir=ASC&sort=start_real'; //B-Berski
+	}
+	else {
+		var params = 'start='+start+'&limit='+limit+'&dir=DESC&sort=start_real'; //B-Berski
+	}
 	epgLoaded[which] = start+limit;
 	doPostWithParam("api/dvr/entry/grid_"+which, readRecordings, params, which);
 }
@@ -568,7 +683,7 @@ function readChannels(response) {
 		var streamUrl = window.location.protocol+'//'+window.location.host+'/play/stream/channel/'+e.uuid;
 		app += '<h1>'+l('liveTv')+'</h1><p>'+streamUrl+'</p>';
 		app += '<a target="_blank" href="'+streamUrl+'" class="whiteButton">'+streamUrl+'</a>';
-		app += '<a target="_blank" href="buzzplayer://'+streamUrl+'" class="whiteButton">Buzzplayer</a>';
+		app += '<a target="_blank" href="'+player+'://'+streamUrl+'" class="whiteButton">'+player+'</a>';
 		app += '</form>';
 		sel[sortNo] += '<li><a href="javascript:" code="'+e.uuid+'" onclick="selectItem(\'channel\',this);">'+e.name+'</a></li>';
 	}
@@ -616,11 +731,12 @@ function cancelEntry(entryId, type) {
 	doPostWithParam('dvr', readCancelEntry, 'entryId='+entryId+'&op=cancelEntry', type);
 }
 
-function deleteEntry(entryId, type) {
+function deleteEntry(entryId, type, disptitle) {
 	var entries = new Array();
 	entries[0] = entryId;
+//	alert(JSON.stringify(disptitle)); //Print response
 	var params = "uuid="+JSON.stringify(entries);
-	if (confirm(l('reallyDeleteItem')))
+	if (confirm(l('reallyDeleteItem')+'\n<'+disptitle+'>'))
 		doPostWithParam('api/idnode/delete', readDeleteEntry, params, type);
 }
 
@@ -680,11 +796,11 @@ var epgLoaded = new Array();
 var lastEpgDay = new Array();
 function loadEpg(uuid, chname, reload) {
 	var start = epgLoaded[uuid] != undefined ? epgLoaded[uuid] : 0;
-	var limit = 20;
+	var limit = start_limit_search;
 	if (reload) {
 		limit = start;
 		start=0;
-		if (limit == 0) limit = 20;
+		if (limit == 0) limit = start_limit;
 		var ch = document.getElementById('channel_'+uuid);
 		ch.innerHTML = '<li>'+l('loading')+'</li>';
 		lastEpgDay[uuid] = undefined;
@@ -733,11 +849,12 @@ function newAutomaticRecorder() {
 	add.uuid = 'new';
 	add.title = '';
 	add.creator = '';
-	add.comment = '';
+	add.comment = 'tvmobil';
 	add.weekdays = new Array(1,2,3,4,5,6,7);
-	add.enabled = true;
-	add.prio = '5';
+	add.enabled = false;
+	add.pri = '2';
 	add.start  = '';
+	add.config_name = Default_Config;
 	return add;
 }
 
@@ -753,7 +870,8 @@ function readAutomaticRecorderList(response) {
 		info += plusMinus(e.pri);
 		info += e.channel ? (info.length > 0 ? ' ' : '') + window.channelNames[e.channel] : '';
 		info += e.tag ? (info.length > 0 ? ' &mdash; ' : '') + window.channelTags[e.tag] : '';
-		info += e.content_type ? (info.length > 0 ? ' &mdash; ' : '') + window.contentGroups[e.content_type] : '';
+//		info += e.content_type ? (info.length > 0 ? ' &mdash; ' : '') + window.contentGroups[e.content_type] : '';
+		info += e.genre ? (info.length > 0 ? ' &mdash; ' : '') + window.contentGroups[e.genre] : '';
 		info += e.config_name ? (info.length > 0 ? ' &mdash; ' : '') + configNames[e.config_name] : '';
 		info += e.start != '' && e.start != 'Any' ? (info.length > 0 ? ' &mdash; ' : '') + e.start : '';
 		info += e.minduration != '' ? (info.length > 0 ? ' &mdash; ' : '') + "&ge;"+getDuration(e.minduration)+l('hour.short') : '';
@@ -783,10 +901,10 @@ function searchEpg(show, wait, reload) {
 	var start = 0;
 	lastEpgDay['s'] = '';
 	endTimes['s'] = new Array();
-	var limit = 20;
+	var limit = start_limit_search;
 	if (reload) {
 		limit = epgLoaded['s'];
-		if (limit == 0 || limit == undefined) limit = 20;
+		if (limit == 0 || limit == undefined) limit = start_limit_search;
 	}
 	var ch = document.getElementById('search');
 	ch.innerHTML = '<li>'+l('loading')+'</li>';
@@ -801,14 +919,16 @@ function searchEpg(show, wait, reload) {
 	}
 }
 
+//Här läses Automatic recorder
 function loadAutomaticRecorderList() {
-	doGet("api/dvr/autorec/grid", readAutomaticRecorderList, "dir=ASC&sort=name");
+	doPost("api/dvr/autorec/grid", readAutomaticRecorderList, "dir=ASC&sort=title&start=0&limit="+limit_automatic);
 }
 
 function initialLoad() {
 	doPost("api/epg/content_type/list", readContentGroups, "full=0");
 	doPost("api/idnode/load", readConfigs, "enum=1&class=dvrconfig");
-	doGet("diskspace", readDiskspace);
+//    alert(JSON.stringify(configs)); //Print response
+//	doGet("diskspace", readDiskspace);
 	channelTagsLoaded = false;
 	channelsLoaded = false;
 	doPost("api/channeltag/grid", readChannelTags, "sort=name&dir=ASC&all=1");
@@ -897,8 +1017,8 @@ function init() {
 	self.name = 'tvheadend';
 	document.getElementById('reloadButton').innerHTML = l('reload');
 	var ini = '';
-	ini += '<li id="diskspaceHeader" class="group">'+l('diskspace')+'</li>';
-	ini += '<li style="text-align:center;" class="noBgImage" id="diskspace">'+icon('../icons/drive.png','left')+'&mdash;'+'</li>';
+//	ini += '<li id="diskspaceHeader" class="group">'+l('diskspace')+'</li>';
+//	ini += '<li style="text-align:center;" class="noBgImage" id="diskspace">'+icon('../icons/drive.png','left')+'&mdash;'+'</li>';
 	ini += '<li id="epgGroup" class="group">'+l('electronicProgramGuide')+'</li>';
 	ini += '<li class="noBgImage"><form onsubmit="searchEpg(true,true);return false;"><div style="position:relative;"><input id="searchText" class="round" type="text" name="search" onfocus="showClearSearch(true);" onkeydown="showClearSearch(true);" onblur="showClearSearch(false);" /><img id="clearSearch" src="images/clearsearch.png" style="display:none;position:absolute;top:2px;right:1.2%;cursor:pointer;" onclick="document.getElementById(\'searchText\').value=\'\';document.getElementById(\'searchText\').focus();"></div>';
 	ini += '<div><input id="searchButton" type="button" value="'+l('search')+'" style="width:99%;" onclick="searchEpg(true,false);"/></div></form></li>';
@@ -914,7 +1034,7 @@ function init() {
 	ini += '<li><a href="#subscriptions" onclick="loadSubscriptions();">'+icon('../icons/subscriptions.png')+l('subscriptions')+'</a></li>';
 	ini += '<li><a href="#adapters" onclick="loadAdapters();">'+icon('../icons/tv_cards.png')+l('adapters')+'</a></li>';
 	ini += '<li><a href="#about" onclick="loadAbout();">'+icon('../icons/information.png')+l('about')+'</a></li>';
-	ini += '<li><a href="../../extjs.html" target="_blank">'+icon('../htslogo.png')+l('desktopSite')+'</a></li>';
+	ini += '<li><a href="../../extjs.html" target="_blank">'+icon('../img/logo.png')+l('desktopSite')+'</a></li>';
 
 	document.getElementById('home').innerHTML += ini;
 	var app = '';

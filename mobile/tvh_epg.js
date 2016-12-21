@@ -5,7 +5,7 @@ var chLimit = new Array();
 var last = '';
 var lastChannel = '';
 var lastEpgX;
-var limit = 400;
+var limit = 1000;
 var start = 0;
 var gap = 4;
 var contentGroups = new Array();
@@ -25,7 +25,9 @@ var loadedPosters = new Array();
 var loadedBackdrops = new Array();
 var posterWidth = 92;
 var backdropWidth = 780;
-var tmdbImgUrl = 'http://d3gtl9l2a4fn1j.cloudfront.net/t/p/w';
+//var tmdbImgUrl = 'http://d3gtl9l2a4fn1j.cloudfront.net/t/p/w';
+//var tmdbImgUrl = 'https://image.tmdb.org/t/p/original';
+var tmdbImgUrl = 'https://image.tmdb.org/t/p/w';
 
 function loadEpg() {
 	doPost("api/epg/events/grid", readEpg, 'start='+start+'&limit='+limit+'&tag='+channelTags[selectedTag]);
@@ -111,7 +113,8 @@ function show(id) {
 			}
 			else {
 				var http = new XMLHttpRequest();
-				http.open("GET", 'http://api.themoviedb.org/3/search/movie?api_key='+tmdbApiKey+'&query='+encodeURI(title)+'&language='+navigator.language.substring(0,2));
+//				http.open("GET", 'http://api.themoviedb.org/3/search/movie?api_key='+tmdbApiKey+'&query='+encodeURI(title)+'&language='+navigator.language.substring(0,2));
+				http.open("GET", 'http://api.themoviedb.org/3/search/movie?api_key='+tmdbApiKey+'&query='+encodeURI(title)+'&language='+'sv');
 				http.send(null);
 				http.title = title;
 				http.div = div;
@@ -161,6 +164,7 @@ function timestampToX(timestamp) {
 
 function readEpg(response) {
 	if (response.entries.length > 0) {
+//		configSelect = configSelect.reverse();
 		var html = '';
 		var last = lastEpgX == undefined ? 0 : lastEpgX;
 		for (var i in response.entries) {
@@ -182,19 +186,21 @@ function readEpg(response) {
 				x=0;
 			}
 			last = x > last ? x : last;
-			if (e.content_type == undefined) e.content_type = 0;
-			e.content_type -= e.content_type % 16;
-			html += '<div id="e_'+e.eventId+'" class="box '+e.dvrState+' ct_'+e.content_type+open+'" style="top:'+y+'px;left:'+x+'px;width:'+w+'px;height:'+lh+'px;">';
+			if (e.genre == undefined) e.genre = 0;
+			e.genre -= e.genre % 16;
+			html += '<div id="e_'+e.eventId+'" class="box '+e.dvrState+' ct_'+e.genre+open+'" style="top:'+y+'px;left:'+x+'px;width:'+w+'px;height:'+lh+'px;">';
 			html += '<div class="bgimage"><div class="gradient"><div class="head" onclick="show('+e.eventId+');"><h1>'+e.title+'</h1>';
+//			html += '<div class="bgimage"><div class="head" onclick="show('+e.eventId+');">'+e.title+'';
 			var sub = '';
 			if (e.subtitle != undefined && e.subtitle != e.title)
 				sub += e.subtitle;
 			if (e.episodeOnscreen != undefined)
 				sub += (sub.length > 0 ? ' &mdash; ' : '') + e.episodeOnscreen;
-			html += '<h2>'+sub+'</h2></div>';
-			html += '<div class="add">'+(e.content_type==0||e.content_type==16?'<div class="poster"></div>':'')+'<h3 onclick="show('+e.id+');">'+nvl(contentGroups[e.contenttype])+'</h3><p class="desc" onclick="show('+e.eventId+');">'+nvl(e.description)+'</p>';
+//			html += '<h2>'+sub+'</h2></div>';
+			html += '<small>'+sub+'</small></div>';
+			html += '<div class="add">'+(e.genre==0||e.genre==16?'<div class="poster"></div>':'')+'<h3 onclick="show('+e.id+');">'+nvl(contentGroups[e.genre])+'</h3><p class="desc" onclick="show('+e.eventId+');">'+nvl(e.description)+'</p>';
 			html += '<p class="time">' + getDateTimeFromTimestamp(e.start, true) + '&ndash;' + getTimeFromTimestamp(e.stop) + ' (' + getDuration(e.stop-e.start) + l('hour.short') + ')</p>';
-			html += '<p class="channel">' + e.channelName + ' &mdash; <a href="http://akas.imdb.org/find?q='+e.title+'" target="_blank">'+l('imdbSearch')+'</a> &mdash; <a href="http://www.themoviedb.org/search?query='+e.title+'" target="_blank">'+l('tmdbSearch')+'</a></p><br clear="all" />';
+			html += '<p class="channel">' + e.channelName + ' &mdash; <a href="http://www.imdb.org/find?q='+e.title+'" target="_blank">'+l('imdbSearch')+'</a> &mdash; <a href="http://www.themoviedb.org/search?language=sv&query='+e.title+'" target="_blank">'+l('tmdbSearch')+'</a></p><br clear="all" />';
 			html += '<form class="record">'+configSelect+'<br /><input type="button" value="'+l('record')+'" onclick="record('+e.eventId+',this,\''+e.channelName+'\');" /></form>';
 			html += '<form class="cancel"><input type="button" value="'+l('cancel')+'" onclick="cancel('+e.eventId+', \''+e.dvrUuid+'\', \''+e.channelName+'\');" /></form>';
 			html += '<p class="tmdb">'+l('tmdbAttribution')+'</p>';
@@ -237,7 +243,8 @@ function readConfigs(response) {
 	window.configSelect = '<select name="config">';
 	for (i in response.entries) {
 		var e = response.entries[i];
-		var selected = (e.key == '') ? ' selected="selected"' : '';
+//		var selected = (e.key == '') ? ' selected="selected"' : '';
+		var selected = (e.val == '(Default profile)') ? ' selected="selected"' : '';
 		window.configSelect += '<option value="'+e.key+'"'+selected+'>'+e.val+'</option>';
 	}
 	window.configSelect += '</select>';
@@ -356,6 +363,7 @@ function readContentGroups(response) {
 		window.contentGroups[e.key] = e.val;
 	}
 	doPost("api/idnode/load", readConfigs, "enum=1&class=dvrconfig");
+//	readConfigs = readConfigs.reverse(); 
 }
 
 function init() {
