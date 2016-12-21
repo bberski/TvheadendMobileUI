@@ -1,11 +1,13 @@
 TvheadendMobileUI
 =================
 
+Fork and Testing.
+
 Tvheadend mobile web interface
 
 ## Introduction
 
-This is a mobile web interface for the Tvheadend streaming/recording server {https://www.lonelycoder.com/tvheadend/}. You need a current version of Tvheadend (3.3).
+This is a mobile web interface for the Tvheadend streaming/recording server {http://www/tvheadend.org}. You need a current version of Tvheadend (4.1).
 
 It uses the framework iUI {http://www.iui-js.org/}, which provides an iPhone-like look and feel. It works on different modern browsers
 
