@@ -2,6 +2,11 @@ TvheadendMobileUI
 =================
 
 Fork and Testing.
+***
+Fix
+***
+TvheadendMobileUI can show preview pictures for movies from TMDB
+see http://forums.kodi.tv/showthread.php?tid=162224&pid=1459680#pid1459680
 
 Tvheadend mobile web interface
 
