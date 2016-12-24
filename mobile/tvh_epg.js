@@ -219,11 +219,15 @@ function cancel(id, dvrUuid, channel) {
 	entries[0] = dvrUuid;
 	var params = "uuid="+JSON.stringify(entries);
 	doPostWithParam("api/idnode/delete", reloadChannel, params, channel);
+	//close box when cancel is selected
+	show(id);
 }
 
 function record(id, button, channel) {
 	var params = 'event_id='+id+'&config_uuid='+button.form.config.value;
 	doPostWithParam("api/dvr/entry/create_by_event", reloadChannel, params, channel);
+	//close box when cancel is selected
+	show(id);
 }
 
 function reloadChannel(response) {
