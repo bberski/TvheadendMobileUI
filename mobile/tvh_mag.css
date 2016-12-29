@@ -74,6 +74,13 @@ div.title {
 	cursor:pointer;
 }
 
+div.titlecolor { 
+	font-size: 12pt;
+	cursor:pointer;
+	background-color: lightgreen;
+
+}
+
 span.episode {
 	padding: 2px;
 	font-size: 9pt;
@@ -95,6 +102,14 @@ td.scheduled {
 	background: url('../icons/clock.png') no-repeat 10px 20px;
 	min-height:36px;
 }
+
+
+
+td.duplicate {
+	background: url('../icons/exclamation.png') no-repeat 10px 20px;
+	min-height:36px;
+}
+
 
 table.inner td.big div.description,
 table.inner td.primetime div.description {

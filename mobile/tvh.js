@@ -685,6 +685,7 @@ function deleteEntry(entryId, type, disptitle) {
 		doPostWithParam('api/idnode/delete', readDeleteEntry, params, type);
 }
 
+//Windows when hit search
 var lastSearch = '';
 function readEpg(response) {
 	var html = '';
@@ -705,6 +706,7 @@ function readEpg(response) {
 				lastEpgDay[uuid] = day;
 			}
 			var epg = '';
+			if (e.dvrState != undefined ? epg += '<li class="groupcolor">' : '');
 			if (e.dvrState == 'scheduled')
 				epg += icon('../icons/clock.png', '(scheduled)');
 			else if (e.dvrState == 'recording')
@@ -714,7 +716,7 @@ function readEpg(response) {
 			else if (e.dvrState == 'recordingError' || e.dvrState == 'completedError')
 				epg += icon('../icons/exclamation.png', '(error)');
 			epg += layoutFormat(e, uuid == 's' ? 'search' : 'epg');
-			html += '<li><a href="#epg_'+e.eventId+'">' + epg + '</a></li>';
+			html += '<li><a href="#epg_'+e.eventId+'">' + epg + '</li>' + '</a></li>';
 			ins += getEpgForm(e);
 		}
 		if (response.totalCount > epgLoaded[uuid])
