@@ -70,6 +70,7 @@ body>ul>li.group {
 
 li.groupcolor {
 	background-color: lightgreen;
+	border:1px solid #021a40;
 }
 
 span.small, div.small {

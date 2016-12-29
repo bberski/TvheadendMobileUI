@@ -190,6 +190,7 @@ div.box {
 div.scheduled h1 {
 	background: url('../icons/clock.png') no-repeat left top;
 	background-color: lightgreen;
+	border:1px solid #021a40;
 	padding-left: 18px;
 	font-weight: normal;
 }
