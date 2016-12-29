@@ -87,7 +87,7 @@ function readEpg(response) {
 				var xclass = nvl(e.dvrState);
 				var yclass = (start.getHours() == 20 || start.getHours() == 21)  && (e.stop-e.start) > 60*60 ? 'primetime' : '';
 				var add = e.schedstate != undefined ? '<br />&nbsp;' : '';
-				var epis = e.episodeOnscreen != undefined ? ' <span class="episode">'+e.episodeOnscreen+'</span>' : '';
+				var epis = e.episodeOnscreen != undefined ? '<br /><span class="episode">'+e.episodeOnscreen+'</span>' : '';
 				var html = '<tr class="item" start="'+e.start+'" duration="'+(e.stop-e.start)+'"><td class="time '+xclass+'">' + getTimeFromTimestamp(e.start) + add + '</td>\n<td class="content '+yclass+'" id="e_'+e.eventId+'"><div class="title"><a onclick="showHide(\'e_'+e.eventId+'\');">'+e.title+epis+'</a></div><div class="subtitle" onclick="showHide(\'e_'+e.eventId+'\');">'+nvl(e.subtitle)+'</div><div onclick="showHide(\'e_'+e.eventId+'\');" class="description">'+nvl(e.description)+'</div><div class="duration">'+getDuration(e.stop-e.start)+l('hour.short')+' &mdash; '+getTimeFromTimestamp(e.stop)+'</div><div class="action">';
 				if (e.dvrState == 'scheduled' || e.dvrState == 'recording')
 					html += '<input type="button" value="'+l('cancel')+'" onclick="cancel('+e.eventId+', \''+e.dvrUuid+'\',\''+e.channelName+'\');" />';
