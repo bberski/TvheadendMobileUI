@@ -107,7 +107,7 @@ var i18nstrings =
 },
 'en':
 {
-	'title': 'Title',
+	'title': 'Title/Search',
 	'subtitle': 'Subtitle',
 	'channel': 'Channel',
 	'channels': 'Channels',
@@ -204,6 +204,20 @@ var i18nstrings =
 	'backToMobileUi': 'back to mobile UI',
 	'mobileUi': 'mobile UI',
 	'minDuration': 'min. duration',
-	'maxDuration': 'max. duration'
+	'maxDuration': 'max. duration',
+	'recorddup': 'Duplicate',
+	'record.Record all': 'Record all', 
+	'record.All: Record if different episode number': 'All: Record if different episode number',
+	'record.All: Record if different subtitle': 'All: Record if different subtitle',
+	'record.All: Record if different description': 'All: Record if different description',
+	'record.All: Record once per week': 'All: Record once per week',
+	'record.All: Record once per day': 'All: Record once per day',
+	'record.Local: Record if different episode number': 'Local: Record if different episode number',
+	'record.Local: Record if different title': 'Local: Record if different title',
+	'record.Local: Record if different subtitle': 'Local: Record if different subtitle',
+	'record.Local: Record if different description': 'Local: Record if different description',
+	'record.Local: Record once per week': 'Local: Record once per week',
+	'record.Local: Record once per day': 'Local: Record once per day',
+	'fulltext': 'Full-text'
 }
 };

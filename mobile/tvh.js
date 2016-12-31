@@ -1,4 +1,5 @@
 var priorities = new Array('important', 'high', 'normal', 'low', 'unimportant', 'notset');
+var record = new Array('Record all', 'All: Record if different episode number', 'All: Record if different subtitle', 'All: Record if different description', 'All: Record once per week', 'All: Record once per day', 'Local: Record if different episode number', 'Local: Record if different title', 'Local: Record if different subtitle', 'Local: Record if different description', 'Local: Record once per week', 'Local: Record once per day');
 var plusMinusSigns = new Array('⊕⊕', '⊕', '⊙', '⊖', '⊖⊖', '⊗');
 var contentGroups = new Array();
 var configs = new Array();
@@ -15,7 +16,7 @@ var channelsLoaded = false;
 var s_start = 50;
 // show nr search
 var start_limit = 100;
-// antal automatic recorder
+// show nr automatic recorder
 var limit_automatic = 200;
 var start_limit_search = 150;
 var Default_Config = 'bb3cad97b91fb112b8f01ada3f16c169';
@@ -91,6 +92,7 @@ function getAutomaticRecorderForm(e) {
 	divs += '<fieldset>';
 	divs += '<div class="row"><label>'+l('title')+'</label><input type="text" name="titel" value="' + nvl(e.title) + '" /></div>';
 	divs += '<div class="row"><label>'+l('enabled')+'</label><div id="enabled" class="toggle" onclick="return;" name="enabled" toggled="'+(e.enabled ? 'true' : 'false') + '"><span class="thumb"></span><span class="toggleOn">'+l('yes')+'</span><span class="toggleOff">'+l('no')+'</span></div></div>';
+	divs += '<div class="row"><label>'+l('fulltext')+'</label><div id="fulltext" class="toggle" onclick="return;" name="fulltext" toggled="'+(e.fulltext ? 'true' : 'false') + '"><span class="thumb"></span><span class="toggleOn">'+l('yes')+'</span><span class="toggleOff">'+l('no')+'</span></div></div>';
 	divs += '</fieldset>';
 	divs += '<fieldset>';
 	divs += '<div class="row"><label>'+l('channel')+'</label><input type="text" code="' + nvl(e.channel) + '" readonly="readonly" name="channel" value="' + nvl(channelNames[e.channel]) + '" onclick="showSelector(\'channel\', this);" /></div>';
@@ -108,9 +110,10 @@ function getAutomaticRecorderForm(e) {
 	divs += '<div class="row"><label>'+l('maxDuration')+'</label><input type="text" code="'+(e.maxduration)+'" readonly="readonly" name="maxDuration" value="' + (e.maxduration>0?getDuration(e.maxduration)+l('hour.short'):l('any')) + '" onclick="showSelector(\'duration\',this);" /></div>';
 	divs += '<div class="row"><label>'+l('startingAround')+'</label><input type="text" code="'+nvl(e.start)+'" readonly="readonly" name="startingAround" value="' + starting + '" onclick="showSelector(\'starting\',this);" /></div>';
 	divs += '<div class="row"><label>'+l('priority')+'</label><input type="text" code="'+nvl(e.pri)+'" readonly="readonly" name="priority" value="' + (e.pri != undefined ? l('prio.'+priorities[e.pri]) : '') + '" onclick="showSelector(\'priority\',this);" /></div>';
+	divs += '<div class="row"><label>'+l('recorddup')+'</label><input type="text" code="'+nvl(e.record)+'" readonly="readonly" name="record" value="' + (e.record != undefined ? l('record.'+record[e.record]) : '') + '" onclick="showSelector(\'record\',this);" /></div>';
 	divs += '</fieldset>';
 	divs += '<fieldset>';
-	divs += '<div class="row"><label>'+l('createdBy')+'</label><input type="text" name="creator" value="' + nvl(e.creator) + '" /></div>';
+	divs += '<div class="row"><label>'+l('createdBy')+'</label><input type="text" " readonly="readonly" name="creator" value="' + nvl(e.creator) + '" /></div>';
 	divs += '<div class="row"><label>'+l('comment')+'</label><input type="text" name="comment" value="' + nvl(e.comment) + '" /></div>';
 	divs += '<div class="row"><label>'+l('directory')+'</label><input type="text" name="directory" value="' + nvl(e.directory) + '" /></div>';
 	divs += '</fieldset>';
@@ -186,6 +189,7 @@ function saveAutomaticRecorder(id) {
 	if (id != 'new')
 		entries[0].uuid = id;
 	entries[0].title = form.titel.value;
+	entries[0].fulltext = form.getElementsByClassName('toggle')[0].getAttribute('toggled') == "true";
 	entries[0].enabled = form.getElementsByClassName('toggle')[0].getAttribute('toggled') == "true";
 	entries[0].tag = form.tag.getAttribute('code');
 	entries[0].channel = form.channel.getAttribute('code');
@@ -200,9 +204,11 @@ function saveAutomaticRecorder(id) {
 	entries[0].minduration = form.minDuration.getAttribute('code');
 	entries[0].maxduration = form.maxDuration.getAttribute('code');
 	entries[0].pri = form.priority.getAttribute('code');
-	entries[0].creator = form.creator.value;
+//	entries[0].creator = form.creator.value;
 	entries[0].comment = form.comment.value;
 	entries[0].directory = form.directory.value;
+	entries[0].record = form.record.getAttribute('code');
+//	entries[0].record = form.record.value;
 	var params = (id=="new"?"conf="+JSON.stringify(entries[0]):"node="+JSON.stringify(entries));
 //	alert(JSON.stringify(params)); //Print 
 	doPost((id=="new"?"api/dvr/autorec/create":"api/idnode/save"), readSaveAutomaticRecorder, params);
@@ -419,8 +425,7 @@ function getIntro(e) {
 }
 
 function getEpgForm(e) {
-//	alert(JSON.stringify(e.genre)); //Print response
-
+//	alert(JSON.stringify(e)); //Print response
 	var divs = getIntro(e);
 	divs += '<fieldset>';
 	divs += textField('episode', e.episodeOnscreen, true);
@@ -444,6 +449,7 @@ function getEpgForm(e) {
 // button record
 		divs += '<a class="whiteButton" href="javascript:recordEpg('+e.eventId+',\''+e.channelUuid+'\');">'+l('record')+'</a>';
 		divs += '<fieldset>';
+		divs += '<div class="row"><label>'+l('comment')+'</label><input type="text" name="comment" value="' + nvl(e.comment) + '" /></div>';
 		divs += '<div class="row"><label>'+l('config')+'</label><input type="text" readonly="readonly" code="" name="config" value="" onclick="javascript:showSelector(\'config\',this);" /></div>';
 		divs += '<div class="row"><label>'+l('directory')+'</label><input type="text" name="directory" value="' + nvl(e.directory) + '" /></div>';
 		divs += '</fieldset>';
@@ -520,9 +526,8 @@ function cancelEpg(start, dvrUuid, channel) {
 
 function recordEpg(id, channel) {
 	var form = document.getElementById('epg_'+id);
-	var params = 'event_id='+id+'&config_uuid='+form.config.getAttribute('code')+'&directory='+form.directory.value;
+	var params = 'event_id='+id+'&config_uuid='+form.config.getAttribute('code')+'&comment='+form.comment.value;
 //	alert(JSON.stringify(params)); //Print response
-
 	doPostWithParam("api/dvr/entry/create_by_event", readRecordEpg, params, channel);
 }
 
@@ -551,7 +556,7 @@ function readRecordings(response) {
 		html += '</a></li>';
 		divs += getRecordingForm(e, which);
 	}
-//	alert(JSON.stringify(response.total)); //Print response
+//	alert(JSON.stringify(response)); //Print response
 	if (response.total > epgLoaded[which])
 		html += '<li class="noBgImage"><a class="more" href="javascript:loadRecordings(\''+which+'\', false);">'+l('getMore')+'</a></li>';
 	if (which == 'upcoming') {
@@ -802,6 +807,7 @@ function newAutomaticRecorder() {
 	add.pri = '2';
 	add.start  = '';
 	add.config_name = Default_Config;
+    add.record = '0';
 	return add;
 }
 
@@ -995,6 +1001,11 @@ function init() {
 	app += '<ul id="prioritySelector" class="selector" title="'+l('priority')+'">';
 	for (i in priorities) {
 		app += '<li><a href="javascript:" code="'+i+'" onclick="selectItem(\'priority\',this);">'+l('prio.'+priorities[i])+'</li>';
+	}
+	app += '</ul>';
+	app += '<ul id="recordSelector" class="selector" title="'+l('record')+'">';
+	for (i in record) {
+		app += '<li><a href="javascript:" code="'+i+'" onclick="selectItem(\'record\',this);">'+l('record.'+record[i])+'</li>';
 	}
 	app += '</ul>';
 	app += '<ul id="durationSelector" class="selector" title="'+l('duration')+'">';
