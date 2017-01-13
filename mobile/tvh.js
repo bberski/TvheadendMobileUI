@@ -239,11 +239,31 @@ function readContentGroups(response) {
 }
 
 function readDiskspace(response) {
-	if (response.totaldiskspace > 0) {
-		var occup = 100 - (100*response.freediskspace/response.totaldiskspace);
-		document.getElementById('diskspace').innerHTML = icon('../icons/drive.png','left')+getProgressBar(200, occup) + Math.round(occup) + '%';
+	if (response.messages != undefined && response.messages[0].totaldiskspace > 0) {
+		var occup = 100 - (100*response.messages[0].freediskspace/response.messages[0].totaldiskspace);
+		var val = response.messages[0].freediskspace;
+                var unit = 'B';
+                if (val > 1024) {
+                        val /= 1024;
+                        unit = 'KB';
+                }
+                if (val > 1024) {
+                        val /= 1024;
+                        unit = 'MB';
+                }
+                if (val > 1024) {
+                        val /= 1024;
+                        unit = 'GB';
+                }
+                if (val > 1024) {
+                        val /= 1024;
+                        unit = 'TB';
+                }
+                val = Math.round(val*10)/10;
+		document.getElementById('diskspace').innerHTML = icon('../icons/drive.png','left')+getProgressBar(200, occup) + Math.round(occup) + '% <span class="small">('+val+' '+unit+')</span>';
 	}
 }
+
 
 function readConfigs(response) {
 	window.configs = response.entries;
@@ -269,33 +289,27 @@ function readSubscriptions(response) {
 	append(app);
 }
 
-function readAdapters(response) {
+function readInputs(response) {
 	var html = '';
 	var app = '';
-//	alert(JSON.stringify(response[0].params[0].value)); //Print response
-	for (var i=0; i<response.length; i++) {
-		var e = response[i];
-		html += '<li><a href="#adapter_'+e.uuid+'">'+e.text+'<div class="small">'+e.class+'</div>';
-		loadInputs();
-		if (f.signal != undefined)
-			html += getProgressBar(200, f.signal) + f.signal + '%'; 
+	for (var i in response.entries) {	
+		var e = response.entries[i];
+		html += '<li><a href="#input_'+e.uuid+'">'+e.input+'<div class="small">'+'</div>';
+		if (e.signal != undefined)
+			html += getProgressBar(200, e.signal) + e.signal + '%'; 
 		html += '</a></li>';
-		app += getAdapterForm(e);
+		app += getInputForm(e);
 	}
-	document.getElementById('adapters').innerHTML = html;
+	document.getElementById('inputs').innerHTML = html;
 	append(app);
 }
 
 function loadSubscriptions() {
 	doGet('api/status/subscriptions', readSubscriptions);
 }
-function readInputs(x_response) {
-}
+
 function loadInputs() {
-	doGet('/api/status/inputs', readInputs);
-}
-function loadAdapters() {
-	doPost('api/hardware/tree', readAdapters, "uuid=root");
+	doGet('api/status/inputs', readInputs);
 }
 
 function readChannelTags(response) {
@@ -387,22 +401,25 @@ function getSubscriptionForm(e) {
 	}
 }
 
-function getAdapterForm(e) {
+function getInputForm(e) {
 	divs = '';
 	divs += '<fieldset>';
-	divs += textField('uuid', e.uuid, true);
-	divs += textField('name', e.text, true);
-	divs += textField('caption', e.caption, true);
-	divs += textField('path', e.params[0].value, true);
-	divs += textField('class', e.class, true);
-	divs += textField('event', e.event, true);
+	divs += textField('name', e.input, true);
+	divs += textField('subs', e.subs, true);
+	divs += textField('weight', e.weight, true);
+	divs += textField('path', e.path, true);
+	divs += textField('devicename', e.devicename, true);
+	divs += textField('deliverysystem', e.deliverySystem, true);
+	divs += textField('services', e.services, true);
+	divs += textField('muxes', e.muxes, true);
+	divs += textField('signal', e.signal, true);
 	divs += '</fieldset>';
-	if (document.getElementById('adapter_'+e.uuid) != null) {
-		document.getElementById('adapter_'+e.uuid).innerHTML = divs;
+	if (document.getElementById('input_'+e.uuid) != null) {
+		document.getElementById('input_'+e.uuid).innerHTML = divs;
 		return '';
 	}
 	else {
-		return '<form id="adapter_' + e.uuid + '" title="' + e.text + '" class="panel">' + divs + '</form>';
+		return '<form id="input_' + e.uuid + '" title="' + e.input + '" class="panel">' + divs + '</form>';
 	}
 }
 
@@ -879,6 +896,7 @@ function loadAutomaticRecorderList() {
 function initialLoad() {
 	doPost("api/epg/content_type/list", readContentGroups, "full=0");
 	doPost("api/idnode/load", readConfigs, "enum=1&class=dvrconfig");
+	doPost("comet/poll", readDiskspace, "boxid=&immediate=0");
 //    alert(JSON.stringify(configs)); //Print response
 	channelTagsLoaded = false;
 	channelsLoaded = false;
@@ -941,10 +959,10 @@ function reload(initial) {
 			if (initial)
 				showInitialPage('subscription');
 		}
-		if (location.hash.indexOf('#_adapter') == 0) {
-			loadAdapters();
+		if (location.hash.indexOf('#_input') == 0) {
+			loadInput();
 			if (initial)
-				showInitialPage('adapter');
+				showInitialPage('input');
 		}
 		if (location.hash.indexOf('#_search') == 0)
 			if (!initial)
@@ -968,6 +986,8 @@ function init() {
 	self.name = 'tvheadend';
 	document.getElementById('reloadButton').innerHTML = l('reload');
 	var ini = '';
+	ini += '<li id="diskspaceHeader" class="group">'+l('diskspace')+'</li>';
+	ini += '<li style="text-align:center;" class="noBgImage" id="diskspace">'+icon('../icons/drive.png','left')+'&mdash;'+'</li>';
 	ini += '<li id="epgGroup" class="group">'+l('electronicProgramGuide')+'</li>';
 	ini += '<li class="noBgImage"><form onsubmit="searchEpg(true,true);return false;"><div style="position:relative;"><input id="searchText" class="round" type="text" name="search" onfocus="showClearSearch(true);" onkeydown="showClearSearch(true);" onblur="showClearSearch(false);" /><img id="clearSearch" src="images/clearsearch.png" style="display:none;position:absolute;top:2px;right:1.2%;cursor:pointer;" onclick="document.getElementById(\'searchText\').value=\'\';document.getElementById(\'searchText\').focus();"></div>';
 	ini += '<div><input id="searchButton" type="button" value="'+l('search')+'" style="width:99%;" onclick="searchEpg(true,false);"/></div></form></li>';
@@ -981,7 +1001,7 @@ function init() {
 	ini += '<li><a href="#ar" onclick="loadAutomaticRecorderList();">'+icon('../icons/auto_rec.png','')+l('automaticRecorder')+'</a></li>';
 	ini += '<li class="group">'+l('informationStatus')+'</li>';
 	ini += '<li><a href="#subscriptions" onclick="loadSubscriptions();">'+icon('../icons/subscriptions.png')+l('subscriptions')+'</a></li>';
-	ini += '<li><a href="#adapters" onclick="loadAdapters();">'+icon('../icons/tv_cards.png')+l('adapters')+'</a></li>';
+	ini += '<li><a href="#inputs" onclick="loadInputs();">'+icon('../icons/stream.png')+l('inputs')+'</a></li>';
 	ini += '<li><a href="#about" onclick="loadAbout();">'+icon('../icons/information.png')+l('about')+'</a></li>';
 	ini += '<li><a href="../../extjs.html" target="_blank">'+icon('../img/logo.png')+l('desktopSite')+'</a></li>';
 
@@ -993,7 +1013,7 @@ function init() {
 	app += '<ul id="finished" title="'+l('finishedRecordings')+'"><li>'+l('loading')+'</li></ul>';
 	app += '<ul id="failed" title="'+l('failedRecordings')+'"><li>'+l('loading')+'</li></ul>';
 	app += '<ul id="subscriptions" title="'+l('subscriptions')+'"><li>'+l('loading')+'</li></ul>';
-	app += '<ul id="adapters" title="'+l('adapters')+'"><li>'+l('loading')+'</li></ul>';
+	app += '<ul id="inputs" title="'+l('inputs')+'"><li>'+l('loading')+'</li></ul>';
 	app += '<ul id="about" title="'+l('about')+'"><li>'+l('loading')+'</li></ul>';
 	app += '<ul id="search" title="'+l('search')+'"><li>'+l('loading')+'</li></ul>';
 	app += '<ul id="tagSelector" class="selector" title="'+l('tag')+'"><li>'+l('loading')+'</li></ul>';

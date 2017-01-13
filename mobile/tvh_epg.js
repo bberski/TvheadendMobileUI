@@ -28,7 +28,8 @@ var backdropWidth = 780;
 var tmdbImgUrl = 'https://image.tmdb.org/t/p/w';
 
 function loadEpg() {
-	doPost("api/epg/events/grid", readEpg, 'start='+start+'&limit='+limit+'&tag='+channelTags[selectedTag]);
+//	doPost("api/epg/events/grid", readEpg, 'start='+start+'&limit='+limit+'&tag='+channelTags[selectedTag]);
+	doPost("api/epg/events/grid", readEpg, 'start='+start+'&limit='+limit+'&channelTag='+selectedTag);
 }
 
 function scrollHandler(event) {
