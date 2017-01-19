@@ -20,6 +20,8 @@ var start_limit = 100;
 var limit_automatic = 200;
 var start_limit_search = 150;
 var Default_Config = 'bb3cad97b91fb112b8f01ada3f16c169';
+//var imdbtranslate = ''
+var imdbtranslate = 'https://translate.google.com/translate?ie=UTF-8&tl=sv&u='
 
 
 //Tips
@@ -367,8 +369,8 @@ function getRecordingForm(e, type) {
 //	alert(JSON.stringify(e)); //Print response
 	disptitle = e.disp_title.replace("'", '');
 	divs += '<a class="whiteButton" href="http://www.themoviedb.org/search?language=sv&query='+e.disp_title+'" target="_blank">'+l('tmdbSearch')+'</a>';
-	divs += '<a class="whiteButton" href="http://www.imdb.org/find?q='+e.disp_title+'" target="_blank">'+l('imdbSearch')+'</a>';
-	divs += '<a class="whiteButton" href="http://m.imdb.com/find?q='+e.disp_title+'" target="_blank">'+l('imdbSearchMobile')+'</a>';
+	divs += '<a class="whiteButton" href="'+imdbtranslate+'http://www.imdb.org/find?q='+e.disp_title+'" target="_blank">'+l('imdbSearch')+'</a>';
+	divs += '<a class="whiteButton" href="'+imdbtranslate+'http://m.imdb.com/find?q='+e.disp_title+'" target="_blank">'+l('imdbSearchMobile')+'</a>';
 	if (e.status == 'Completed OK' )
 		divs += '<a class="redButton" href="javascript:deleteEntry(\''+e.uuid+'\', \''+type+'\', \''+disptitle+'\');">'+l('delete')+'</a>';
 	if (e.sched_status == 'scheduled' || e.sched_status == 'recording' || type == 'failed')

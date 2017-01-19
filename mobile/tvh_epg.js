@@ -26,6 +26,8 @@ var loadedBackdrops = new Array();
 var posterWidth = 92;
 var backdropWidth = 780;
 var tmdbImgUrl = 'https://image.tmdb.org/t/p/w';
+//var imdbtranslate = ''
+var imdbtranslate = 'https://translate.google.com/translate?ie=UTF-8&tl=sv&u='
 
 function loadEpg() {
 //	doPost("api/epg/events/grid", readEpg, 'start='+start+'&limit='+limit+'&tag='+channelTags[selectedTag]);
@@ -195,7 +197,7 @@ function readEpg(response) {
 			html += '<small>'+sub+'</small></div>';
 			html += '<div class="add">'+(e.genre==0||e.genre==16?'<div class="poster"></div>':'')+'<h3 onclick="show('+e.id+');">'+nvl(contentGroups[e.genre])+'</h3><p class="desc" onclick="show('+e.eventId+');">'+nvl(e.description)+'</p>';
 			html += '<p class="time">' + getDateTimeFromTimestamp(e.start, true) + '&ndash;' + getTimeFromTimestamp(e.stop) + ' (' + getDuration(e.stop-e.start) + l('hour.short') + ')</p>';
-			html += '<p class="channel">' + e.channelName + ' &mdash; <a href="http://www.imdb.org/find?q='+e.title+'" target="_blank">'+l('imdbSearch')+'</a> &mdash; <a href="http://www.themoviedb.org/search?language=sv&query='+e.title+'" target="_blank">'+l('tmdbSearch')+'</a></p><br clear="all" />';
+			html += '<p class="channel">' + e.channelName + ' &mdash; <a href="'+imdbtranslate+'http://www.imdb.org/find?q='+e.title+'" target="_blank">'+l('imdbSearch')+'</a> &mdash; <a href="http://www.themoviedb.org/search?language=sv&query='+e.title+'" target="_blank">'+l('tmdbSearch')+'</a></p><br clear="all" />';
 			html += '<form class="record">'+configSelect+'<br /><input type="button" value="'+l('record')+'" onclick="record('+e.eventId+',this,\''+e.channelName+'\');" /></form>';
 			html += '<form class="cancel"><input type="button" value="'+l('cancel')+'" onclick="cancel('+e.eventId+', \''+e.dvrUuid+'\', \''+e.channelName+'\');" /></form>';
 			html += '<p class="tmdb">'+l('tmdbAttribution')+'</p>';
