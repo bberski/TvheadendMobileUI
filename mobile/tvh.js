@@ -20,8 +20,8 @@ var start_limit = 100;
 var limit_automatic = 200;
 var start_limit_search = 150;
 var Default_Config = 'bb3cad97b91fb112b8f01ada3f16c169';
-//var imdbtranslate = ''
-var imdbtranslate = 'https://translate.google.com/translate?ie=UTF-8&tl=sv&u='
+//var imdbtranslate = '';
+var imdbtranslate = 'https://translate.google.com/translate?ie=UTF-8&tl=sv&u=';
 
 
 //Tips
@@ -89,9 +89,13 @@ function selectItem(type, a) {
 	iui.goBack();
 }
 
+//Autorecord input
 function getAutomaticRecorderForm(e) {
+//	alert(JSON.stringify(e)); //Print response
+
 	var divs = '';
 	divs += '<fieldset>';
+	divs += '<div class="row"><label>'+l('name')+'</label><input type="text" name="name" value="' + nvl(e.name) + '" /></div>';
 	divs += '<div class="row"><label>'+l('title')+'</label><input type="text" name="titel" value="' + nvl(e.title) + '" /></div>';
 	divs += '<div class="row"><label>'+l('enabled')+'</label><div id="enabled" class="toggle" onclick="return;" name="enabled" toggled="'+(e.enabled ? 'true' : 'false') + '"><span class="thumb"></span><span class="toggleOn">'+l('yes')+'</span><span class="toggleOff">'+l('no')+'</span></div></div>';
 	divs += '<div class="row"><label>'+l('fulltext')+'</label><div id="fulltext" class="toggle" onclick="return;" name="fulltext" toggled="'+(e.fulltext ? 'true' : 'false') + '"><span class="thumb"></span><span class="toggleOn">'+l('yes')+'</span><span class="toggleOff">'+l('no')+'</span></div></div>';
@@ -190,18 +194,20 @@ function saveAutomaticRecorder(id) {
 	entries[0] = new Object();
 	if (id != 'new')
 		entries[0].uuid = id;
+	entries[0].name = form.name.value;
 	entries[0].title = form.titel.value;
-	entries[0].fulltext = form.getElementsByClassName('toggle')[0].getAttribute('toggled') == "true";
 	entries[0].enabled = form.getElementsByClassName('toggle')[0].getAttribute('toggled') == "true";
+	entries[0].fulltext = form.getElementsByClassName('toggle')[1].getAttribute('toggled') == "true";
 	entries[0].tag = form.tag.getAttribute('code');
 	entries[0].channel = form.channel.getAttribute('code');
-	entries[0].weekdays = new Array();
-	for (var i=1; i<=7; i++) {
-		if (form.getElementsByClassName('toggle')[i].getAttribute('toggled') == "true")
-			entries[0].weekdays[i] = i; 
-	}
 	entries[0].content_type = form.contenttype.getAttribute('code');
 	entries[0].config_name = form.config_name.getAttribute('code');
+	entries[0].weekdays = new Array();
+	for (var i=1; i<=7; i++) {
+		if (form.getElementsByClassName('toggle')[i+1].getAttribute('toggled') == "true")
+			entries[0].weekdays[i] = i; 
+	}
+//	alert(JSON.stringify(entries)); //Print 
 	entries[0].start = form.startingAround.getAttribute('code');
 	entries[0].minduration = form.minDuration.getAttribute('code');
 	entries[0].maxduration = form.maxDuration.getAttribute('code');
@@ -343,6 +349,8 @@ function readChannelTags(response) {
 
 // Inspelade och kommande inspelningar
 function getRecordingForm(e, type) {
+//	alert(JSON.stringify(e)); //Print response
+
 	var divs = getIntro(e);
 	divs += '<fieldset>';
 	divs += textField('episode', e.episode, true);
@@ -364,6 +372,12 @@ function getRecordingForm(e, type) {
 	divs += textField('status', status, true);
 	divs += textField('errors', e.errors+'/'+e.errorcode+'/'+e.data_errors, true);
 	divs += textField('comment', e.comment, true);
+	divs += textField('Filename', e.filename, true);
+	caption = e.autorec_caption.split(' (');
+	search = caption[0];
+//	alert(JSON.stringify(caption1)); //Print response
+//	divs += textField('Autorec', e.autorec + '/'+ e.autorec_caption, true);
+	divs += textField('Autorec', search, true);
 	divs += textField('uiid', e.uuid, true);
 	divs += '</fieldset>';
 //	alert(JSON.stringify(e)); //Print response
@@ -818,6 +832,7 @@ function loadCurrent() {
 function newAutomaticRecorder() {
 	var add = new Object();
 	add.uuid = 'new';
+	add.name = '';
 	add.title = '';
 	add.creator = '';
 	add.comment = 'tvmobil';
@@ -826,10 +841,11 @@ function newAutomaticRecorder() {
 	add.pri = '2';
 	add.start  = '';
 	add.config_name = Default_Config;
-    add.record = '0';
+	add.record = '1';
 	return add;
 }
 
+//Hit Autorecording
 function readAutomaticRecorderList(response) {
 	var list = document.getElementById('ar');
 	var html = '';
@@ -856,7 +872,11 @@ function readAutomaticRecorderList(response) {
 		}
 		html += '<li><a' + (e.enabled?'':' class="inactive"')+' href="#ar_' + e.uuid + '">';
 		html += e.enabled ? icon('../icons/tick.png',l('active')):icon('../icons/control_pause.png', l('inactive'));
-		html += e.title;
+//		if (e.name != "" && e.title != "" && e.name === e.title)
+		if (e.name != undefined && e.title != undefined)
+			html += e.name;
+		else
+			html += e.title + '<br>' + '(Empty Name)';
 		if (info.length > 0)
 			html += '<div class="small padleft">'+info+'</div>';
 		html += '</a></li>';
@@ -890,9 +910,10 @@ function searchEpg(show, wait, reload) {
 	}
 }
 
-//Här läses Automatic recorder
+//Här läses Automatic recorder från TVH
 function loadAutomaticRecorderList() {
-	doPost("api/dvr/autorec/grid", readAutomaticRecorderList, "dir=ASC&sort=title&start=0&limit="+limit_automatic);
+//	doPost("api/dvr/autorec/grid", readAutomaticRecorderList, "dir=ASC&sort=title&start=0&limit="+limit_automatic);
+	doPost("api/dvr/autorec/grid", readAutomaticRecorderList, "dir=ASC&sort=name&start=0&limit="+limit_automatic);
 }
 
 function initialLoad() {

@@ -29,7 +29,7 @@ var layouts =
 	'current': '%st%pb%et%br<b>%ti</b>%ds_ep%br%su',
 	'epg': '<span class="small">%st%ds%et</span> %ti<div class="small">%su</div>',
 	'search': '%ti%ds_ep<div class="small">%sdt%ds%et%ds%ch%ds_su</div>',
-	'dvr': '%ti%ds_ep<div class="small">%st (%du)%ds_su%ds%pr%ch%dir</div>',
+	'dvr': 'ti%ds_ep<div class="small">%st (%du)%ds_su%ds%pr%ch%dir</div>',
 	},
 'gborri':
 {
@@ -39,6 +39,8 @@ var layouts =
 	'dvr': '%dvric%ti%bu_ep<div class="small">%st%ds%et%dir</div>',
 	}
 };
+
+//	'dvr': '%dvric%na%ds_ep%ti%bu_ep<div class="small">%st%ds%et%dir</div>',
 
 //	'search': '%ch•%ti%bu_ep<div class="small">%sdt%ds%et%ds%ds_ep</div>',
 
