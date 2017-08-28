@@ -374,10 +374,9 @@ function getRecordingForm(e, type) {
 	divs += textField('comment', e.comment, true);
 	divs += textField('Filename', e.filename, true);
 	caption = e.autorec_caption.split(' (');
-	search = caption[0];
+	autorec = caption[0];
 //	alert(JSON.stringify(caption1)); //Print response
-//	divs += textField('Autorec', e.autorec + '/'+ e.autorec_caption, true);
-	divs += textField('Autorec', search, true);
+	divs += textField('Autorec', autorec, true);
 	divs += textField('uiid', e.uuid, true);
 	divs += '</fieldset>';
 //	alert(JSON.stringify(e)); //Print response
