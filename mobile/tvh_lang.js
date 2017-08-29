@@ -218,6 +218,8 @@ var i18nstrings =
 	'record.Local: Record if different description': 'Local: Record if different description',
 	'record.Local: Record once per week': 'Local: Record once per week',
 	'record.Local: Record once per day': 'Local: Record once per day',
-	'fulltext': 'Full-text'
+	'fulltext': 'Full-text',
+	'autorec': 'Autorec',
+	'filename': 'Filename'
 }
 };

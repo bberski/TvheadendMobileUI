@@ -372,11 +372,11 @@ function getRecordingForm(e, type) {
 	divs += textField('status', status, true);
 	divs += textField('errors', e.errors+'/'+e.errorcode+'/'+e.data_errors, true);
 	divs += textField('comment', e.comment, true);
-	divs += textField('Filename', e.filename, true);
+	divs += textField('filename', e.filename, true);
 	caption = e.autorec_caption.split(' (');
 	autorec = caption[0];
 //	alert(JSON.stringify(caption1)); //Print response
-	divs += textField('Autorec', autorec, true);
+	divs += textField('autorec', autorec, true);
 	divs += textField('uiid', e.uuid, true);
 	divs += '</fieldset>';
 //	alert(JSON.stringify(e)); //Print response
