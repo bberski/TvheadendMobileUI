@@ -366,7 +366,7 @@ function getRecordingForm(e, type) {
 		divs += textField('duplicate', 'Will be skipped, recorded =  ' +getDateTimeFromTimestamp(e.duplicate, true), true);
 	}
 	else {
-		divs += textField('duplicate', 'No');
+		divs += textField('duplicate', l('no'));
 	}
 	var status = l('status.'+e.status)!='status.'+e.status ? l('status.'+e.status) : e.status;
 	divs += textField('status', status, true);
